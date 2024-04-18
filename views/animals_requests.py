@@ -25,7 +25,6 @@ ANIMALS = [
     }
 ]
 
-
 def get_all_animals():
     return ANIMALS
 
