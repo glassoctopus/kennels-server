@@ -6,8 +6,6 @@ def get_all_locations():
     """query to get all locations with their respective animals and employees"""
     # Initialize empty lists to hold all list representations for the complex request
     locations = []
-    employees = []
-    animals = []
 
     # Open a connection to the database
     with sqlite3.connect("./kennel.sqlite3") as conn:
