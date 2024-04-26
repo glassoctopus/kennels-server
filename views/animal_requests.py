@@ -1,6 +1,6 @@
 import sqlite3
 import json
-from models import Animal
+from models import Animal, Location, Customer
 
 def get_all_animals():
     # Open a connection to the database
@@ -17,9 +17,18 @@ def get_all_animals():
             a.name,
             a.breed,
             a.status,
+            a.location_id,
             a.customer_id,
-            a.location_id
-        FROM animal a
+            l.name location_name,
+            l.address location_address,
+            c.name customer_name,
+            c.address customer_address,
+            c.email customer_email      
+        FROM Animal a
+        JOIN Location l
+            ON l.id = a.location_id
+        JOIN Customer c 
+            ON a.customer_id = c.id
         """)
 
         # Initialize an empty list to hold all animal representations
@@ -31,17 +40,26 @@ def get_all_animals():
         # Iterate list of data returned from database
         for row in dataset:
 
-            # Create an animal instance from the current row.
-            # Note that the database fields are specified in
-            # exact order of the parameters defined in the
-            # Animal class above.
-            animal = Animal(row['id'], row['name'], row['breed'],
-                            row['status'], row['customer_id'],
-                            row['location_id'])
+            # Create an animal instance from the current row
+            animal = Animal(row['id'], row['name'], row['breed'], row['status'],
+                            row['location_id'], row['customer_id'])
+            
+            # Create a Location instance from the current row
+            location = Location(row['location_id'], row['location_name'], row['location_address'])
+            
+            # Customer instance ;^)
+            customer = Customer(row['customer_id'], row['customer_name'], row['customer_address'], row['customer_email'])
+            # remove the password property for output, write a discussion ticket to have teachers elaborate. 
+            del customer.password
 
-            animals.append(animal.__dict__) # see the notes below for an explanation on this line of code.
+            # Add the dictionary representation of the location & customer to the animal
+            animal.location = location.__dict__
+            animal.customer = customer.__dict__
 
-    return animals
+            # Add the dictionary representation of the animal to the list
+            animals.append(animal.__dict__)
+        
+        return animals
 
 def get_single_animal(id):
     with sqlite3.connect("./kennel.sqlite3") as conn:
@@ -153,14 +171,30 @@ def delete_animal(id):
         """, (id, ))
         
 def update_animal(id, new_animal):
-    # Iterate the ANIMALS list, but use enumerate() so that
-    # you can access the index value of each item.
-    for index, animal in enumerate(ANIMALS):
-        if animal["id"] == id:
-            # Found the animal. Update the value.
-            new_animal["id"] == id
-            ANIMALS[index] = new_animal
-            break    
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        UPDATE Animal
+            SET
+                name = ?,
+                breed = ?,
+                status = ?,
+                location_id = ?,
+                customer_id = ?
+        WHERE id = ?
+        """, (new_animal['name'], new_animal['breed'],
+              new_animal['status'], new_animal['locationId'],
+              new_animal['customerId'], id, ))
+
+        # Were any rows affected?
+        # Did the client send an `id` that exists?
+        rows_affected = db_cursor.rowcount
+
+    # return value of this function
+    if rows_affected == 0:
+        # Forces 404 response by main module
+        return False
     else:
-        create_animal(new_animal)  
-   
+        # Forces 204 response by main module
+        return True
