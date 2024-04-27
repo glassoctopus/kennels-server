@@ -16,12 +16,12 @@ def get_all_locations():
 
         # Write the SQL query to get the information you want
         db_cursor.execute("""
-        SELECT
-            l.id,
-            l.name,
-            l.address
-        FROM location l
-        """)
+            SELECT
+                l.id,
+                l.name,
+                l.address
+            FROM location l
+            """)
         
         dataset_locations = db_cursor.fetchall()     
 
@@ -30,14 +30,14 @@ def get_all_locations():
             location = Location(row['id'], row['name'], row['address'])
             
             db_cursor.execute("""
-            SELECT
-                e.id,
-                e.name,
-                e.address,
-                e.location_id
-            FROM employee e
-            WHERE e.location_id = ?
-            """, ( location.id, ))
+                SELECT
+                    e.id,
+                    e.name,
+                    e.address,
+                    e.location_id
+                FROM employee e
+                WHERE e.location_id = ?
+                """, ( location.id, ))
             
             dataset_employees = db_cursor.fetchall()
             
@@ -46,16 +46,16 @@ def get_all_locations():
                 location.employees.append(employee.__dict__)
                 
             db_cursor.execute("""
-            SELECT
-                a.id,
-                a.name,
-                a.breed,
-                a.status,
-                a.location_id,
-                a.customer_id
-            FROM animal a
-            WHERE a.location_id = ?
-            """, ( location.id, ))
+                SELECT
+                    a.id,
+                    a.name,
+                    a.breed,
+                    a.status,
+                    a.location_id,
+                    a.customer_id
+                FROM animal a
+                WHERE a.location_id = ?
+                """, ( location.id, ))
                 
             dataset_animals = db_cursor.fetchall()
                 
