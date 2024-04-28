@@ -170,10 +170,10 @@ class HandleRequests(BaseHTTPRequestHandler):
         elif resource == "customers":
             success = update_customer(id, post_body)
         
-        elif resource == "employee":
+        elif resource == "employees":
             success = update_employee(id, post_body)
         
-        elif resource == "location":
+        elif resource == "locations":
             success = update_location(id, post_body)
         
         # handle the value of success

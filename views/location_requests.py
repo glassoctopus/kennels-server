@@ -16,12 +16,12 @@ def get_all_locations():
 
         # Write the SQL query to get the information you want
         db_cursor.execute("""
-            SELECT
-                l.id,
-                l.name,
-                l.address
-            FROM location l
-            """)
+        SELECT
+            l.id,
+            l.name,
+            l.address
+        FROM location l
+        """)
         
         dataset_locations = db_cursor.fetchall()     
 
@@ -30,14 +30,14 @@ def get_all_locations():
             location = Location(row['id'], row['name'], row['address'])
             
             db_cursor.execute("""
-                SELECT
-                    e.id,
-                    e.name,
-                    e.address,
-                    e.location_id
-                FROM employee e
-                WHERE e.location_id = ?
-                """, ( location.id, ))
+            SELECT
+                e.id,
+                e.name,
+                e.address,
+                e.location_id
+            FROM employee e
+            WHERE e.location_id = ?
+            """, ( location.id, ))
             
             dataset_employees = db_cursor.fetchall()
             
@@ -46,16 +46,16 @@ def get_all_locations():
                 location.employees.append(employee.__dict__)
                 
             db_cursor.execute("""
-                SELECT
-                    a.id,
-                    a.name,
-                    a.breed,
-                    a.status,
-                    a.location_id,
-                    a.customer_id
-                FROM animal a
-                WHERE a.location_id = ?
-                """, ( location.id, ))
+            SELECT
+                a.id,
+                a.name,
+                a.breed,
+                a.status,
+                a.location_id,
+                a.customer_id
+            FROM animal a
+            WHERE a.location_id = ?
+            """, ( location.id, ))
                 
             dataset_animals = db_cursor.fetchall()
                 
@@ -91,21 +91,22 @@ def get_single_location(id):
 
         return location.__dict__
 
-def create_location(location):
-    # Get the id value of the last location in the list
-    max_id = LOCATIONS[-1]["id"]
+def create_location(new_location):
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        db_cursor = conn.cursor()
 
-    # Add 1 to whatever that number is
-    new_id = max_id + 1
+        db_cursor.execute("""
+        INSERT INTO location
+            ( name, address )
+        VALUES
+            ( ?, ? );
+        """, (new_location['name'], new_location['address'], ))
 
-    # Add an `id` property to the location dictionary
-    location["id"] = new_id
+        id = db_cursor.lastrowid
 
-    # Add the location dictionary to the list
-    LOCATIONS.append(location)
+        new_location['id'] = id
 
-    # Return the dictionary with `id` property added
-    return location
+    return new_location
 
 def delete_location(id):
     with sqlite3.connect("./kennel.sqlite3") as conn:
@@ -117,13 +118,22 @@ def delete_location(id):
         """, (id, ))
 
 def update_location(id, new_location):
-    # Iterate the locationS list, but use enumerate() so that
-    # you can access the index value of each item.
-    for index, location in enumerate(LOCATIONS):
-        if location["id"] == id:
-            # Found the location. Update the value.
-            new_location["id"] = id
-            LOCATIONS[index] = new_location
-            break    
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        UPDATE Location
+            SET
+                name = ?,
+                address = ?
+        WHERE id = ?
+        """, (new_location['name'], new_location['address'], id, ))
+
+        rows_affected = db_cursor.rowcount
+
+    if rows_affected == 0:
+        # Forces 404 response by main module
+        return False
     else:
-        create_location(new_location) 
+        # Forces 204 response by main module
+        return True

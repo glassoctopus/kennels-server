@@ -110,3 +110,5 @@ JOIN Location l
     ON l.id = a.location_id
 JOIN Customer c 
     ON a.customer_id = c.id
+
+SELECT * FROM Animal ORDER BY id DESC;
