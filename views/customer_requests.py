@@ -65,8 +65,6 @@ def get_single_customer(id):
         customer = Customer(data['id'], data['name'], data['address'], data['email'], data['password'])
 
         return customer.__dict__
-
-# TODO: you will get an error about the address on customer. Look through the customer model and requests to see if you can solve the issue.
         
 def get_customer_by_email(email):
 
@@ -95,21 +93,23 @@ def get_customer_by_email(email):
 
     return customers
 
-def create_customer(customer):
-    # Get the id value of the last customer in the list
-    max_id = CUSTOMERS[-1]["id"]
+def create_customer(new_customer):
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        db_cursor = conn.cursor()
 
-    # Add 1 to whatever that number is
-    new_id = max_id + 1
+        db_cursor.execute("""
+        INSERT INTO customer
+            ( name, address, email, password )
+        VALUES
+            ( ?, ?, ?, ?);
+        """, (new_customer['name'], new_customer['address'],
+              new_customer['email'], new_customer['password'], ))
 
-    # Add an `id` property to the customer dictionary
-    customer["id"] = new_id
+        id = db_cursor.lastrowid
 
-    # Add the customer dictionary to the list
-    CUSTOMERS.append(customer)
+        new_customer['id'] = id
 
-    # Return the dictionary with `id` property added
-    return customer
+    return new_customer
 
 def delete_customer(id):
     with sqlite3.connect("./kennel.sqlite3") as conn:
@@ -121,13 +121,28 @@ def delete_customer(id):
         """, (id, ))
 
 def update_customer(id, new_customer):
-    # Iterate the customerS list, but use enumerate() so that
-    # you can access the index value of each item.
-    for index, customer in enumerate(CUSTOMERS):
-        if customer["id"] == id:
-            # Found the customer. Update the value.
-            new_customer["id"] = id
-            CUSTOMERS[index] = new_customer
-            break    
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        UPDATE Customer
+            SET
+                name = ?,
+                address = ?,
+                email = ?,
+                password = ?
+        WHERE id = ?
+        """, (new_customer['name'], new_customer['address'],
+              new_customer['email'], new_customer['password'], id, ))
+
+        # Were any rows affected?
+        # Did the client send an `id` that exists?
+        rows_affected = db_cursor.rowcount
+
+    # return value of this function
+    if rows_affected == 0:
+        # Forces 404 response by main module
+        return False
     else:
-        create_customer(new_customer)  
+        # Forces 204 response by main module
+        return True

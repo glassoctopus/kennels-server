@@ -95,22 +95,23 @@ def get_employees_by_location(location):
 
     return employees
 
+def create_employee(new_employee):
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        db_cursor = conn.cursor()
 
-def create_employee(employee):
-    # Get the id value of the last employee in the list
-    max_id = EMPLOYEES[-1]["id"]
+        db_cursor.execute("""
+        INSERT INTO employee
+            ( name, address, location_id )
+        VALUES
+            ( ?, ?, ? );
+        """, (new_employee['name'], new_employee['address'],
+              new_employee['location_id'], ))
 
-    # Add 1 to whatever that number is
-    new_id = max_id + 1
+        id = db_cursor.lastrowid
 
-    # Add an `id` property to the employee dictionary
-    employee["id"] = new_id
+        new_employee['id'] = id
 
-    # Add the employee dictionary to the list
-    EMPLOYEES.append(employee)
-
-    # Return the dictionary with `id` property added
-    return employee
+    return new_employee
 
 def delete_employee(id):
     with sqlite3.connect("./kennel.sqlite3") as conn:
@@ -120,15 +121,29 @@ def delete_employee(id):
         DELETE FROM employee
         WHERE id = ?
         """, (id, ))
-
+        
 def update_employee(id, new_employee):
-    # Iterate the employeeS list, but use enumerate() so that
-    # you can access the index value of each item.
-    for index, employee in enumerate(EMPLOYEES):
-        if employee["id"] == id:
-            # Found the employee. Update the value.
-            new_employee["id"] = id
-            EMPLOYEES[index] = new_employee
-            break    
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        UPDATE Employee
+            SET
+                name = ?,
+                address = ?,
+                location_id = ?
+        WHERE id = ?
+        """, (new_employee['name'], new_employee['address'],
+              new_employee['location_id'], id, ))
+
+        # Were any rows affected?
+        # Did the client send an `id` that exists?
+        rows_affected = db_cursor.rowcount
+
+    # return value of this function
+    if rows_affected == 0:
+        # Forces 404 response by main module
+        return False
     else:
-        create_employee(new_employee)  
+        # Forces 204 response by main module
+        return True
