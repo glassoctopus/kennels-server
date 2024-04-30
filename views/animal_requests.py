@@ -12,24 +12,24 @@ def get_all_animals():
 
         # Write the SQL query to get the information you want
         db_cursor.execute("""
-        SELECT
-            a.id,
-            a.name,
-            a.breed,
-            a.status,
-            a.location_id,
-            a.customer_id,
-            l.name location_name,
-            l.address location_address,
-            c.name customer_name,
-            c.address customer_address,
-            c.email customer_email      
-        FROM Animal a
-        JOIN Location l
-            ON l.id = a.location_id
-        JOIN Customer c 
-            ON a.customer_id = c.id
-        """)
+            SELECT
+                a.id,
+                a.name,
+                a.breed,
+                a.status,
+                a.location_id,
+                a.customer_id,
+                l.name location_name,
+                l.address location_address,
+                c.name customer_name,
+                c.address customer_address,
+                c.email customer_email      
+            FROM Animal a
+            JOIN Location l
+                ON l.id = a.location_id
+            JOIN Customer c 
+                ON a.customer_id = c.id
+            """)
 
         # Initialize an empty list to hold all animal representations
         animals = []
@@ -69,16 +69,16 @@ def get_single_animal(id):
         # Use a ? parameter to inject a variable's value
         # into the SQL statement.
         db_cursor.execute("""
-        SELECT
-            a.id,
-            a.name,
-            a.breed,
-            a.status,
-            a.customer_id,
-            a.location_id
-        FROM animal a
-        WHERE a.id = ?
-        """, ( id, ))
+            SELECT
+                a.id,
+                a.name,
+                a.breed,
+                a.status,
+                a.customer_id,
+                a.location_id
+            FROM animal a
+            WHERE a.id = ?
+            """, ( id, ))
 
         # Load the single result into memory
         data = db_cursor.fetchone()
@@ -98,16 +98,16 @@ def get_animals_by_location(location):
 
         # Write the SQL query to get the information you want
         db_cursor.execute("""
-        SELECT
-            a.id,
-            a.name,
-            a.breed,
-            a.status,
-            a.customer_id,
-            a.location_id
-        FROM animal a
-        WHERE a.location_id = ?
-        """, ( location, ))
+            SELECT
+                a.id,
+                a.name,
+                a.breed,
+                a.status,
+                a.customer_id,
+                a.location_id
+            FROM animal a
+            WHERE a.location_id = ?
+            """, ( location, ))
 
         animals = []
         dataset = db_cursor.fetchall()
@@ -125,16 +125,16 @@ def get_animals_by_treatment(treatment):
 
         # Write the SQL query to get the information you want
         db_cursor.execute("""
-        SELECT
-            a.id,
-            a.name,
-            a.breed,
-            a.status,
-            a.customer_id,
-            a.location_id
-        FROM animal a
-        WHERE a.status = ?
-        """, ( treatment, ))
+            SELECT
+                a.id,
+                a.name,
+                a.breed,
+                a.status,
+                a.customer_id,
+                a.location_id
+            FROM animal a
+            WHERE a.status = ?
+            """, ( treatment, ))
 
         animals = []
         dataset = db_cursor.fetchall()
@@ -150,13 +150,13 @@ def create_animal(new_animal):
         db_cursor = conn.cursor()
 
         db_cursor.execute("""
-        INSERT INTO Animal
-            ( name, breed, status, location_id, customer_id )
-        VALUES
-            ( ?, ?, ?, ?, ?);
-        """, (new_animal['name'], new_animal['breed'],
-              new_animal['status'], new_animal['locationId'],
-              new_animal['customerId'], ))
+            INSERT INTO Animal
+                ( name, breed, status, location_id, customer_id )
+            VALUES
+                ( ?, ?, ?, ?, ?);
+            """, (new_animal['name'], new_animal['breed'],
+                new_animal['status'], new_animal['locationId'],
+                new_animal['customerId'], ))
 
         # The `lastrowid` property on the cursor will return
         # the primary key of the last thing that got added to
@@ -185,17 +185,17 @@ def update_animal(id, new_animal):
         db_cursor = conn.cursor()
 
         db_cursor.execute("""
-        UPDATE Animal
-            SET
-                name = ?,
-                breed = ?,
-                status = ?,
-                location_id = ?,
-                customer_id = ?
-        WHERE id = ?
-        """, (new_animal['name'], new_animal['breed'],
-              new_animal['status'], new_animal['location_id'],
-              new_animal['customer_id'], id, ))
+            UPDATE Animal
+                SET
+                    name = ?,
+                    breed = ?,
+                    status = ?,
+                    location_id = ?,
+                    customer_id = ?
+            WHERE id = ?
+            """, (new_animal['name'], new_animal['breed'],
+                new_animal['status'], new_animal['location_id'],
+                new_animal['customer_id'], id, ))
 
         # Were any rows affected?
         # Did the client send an `id` that exists?
@@ -208,3 +208,52 @@ def update_animal(id, new_animal):
     else:
         # Forces 204 response by main module
         return True
+
+def search_animal(search_string):
+    searching_for = search_string
+    print(searching_for, " is what we are searching for")
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        # Use a ? parameter to inject a variable's value
+        # into the SQL statement.
+        db_cursor.execute("""
+            SELECT
+            *
+            FROM animal a
+            WHERE a.name LIKE ?
+            """, ( '%' + search_string + '%', ))
+        
+        animals = []
+
+        # Load the single result into memory
+        search_data = db_cursor.fetchone()
+
+        # Create an animal instance from the current row
+        if search_data is not None:
+            for row in search_data:
+                animal = Animal(search_data['id'], search_data['name'], search_data['breed'],
+                                search_data['status'], search_data['customer_id'],
+                                search_data['location_id'])
+                animals.append(animal.__dict__)
+        
+        
+        db_cursor.execute("""
+            SELECT
+            *
+            FROM animal a
+            WHERE a.breed LIKE ?
+            """, ( '%' + search_string + '%', ))
+        
+        breed_data = db_cursor.fetchone()
+
+        if breed_data is not None:
+            for row in breed_data:
+                animal = Animal(breed_data['id'], breed_data['name'], breed_data['breed'],
+                                breed_data['status'], breed_data['customer_id'],
+                                breed_data['location_id'])
+                animals.append(animal.__dict__)
+        
+        return animal.__dict__
+    
