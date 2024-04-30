@@ -1,6 +1,6 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs
-from views import get_all_animals, get_single_animal, get_all_locations, get_single_location, get_all_employees, get_single_employee, get_all_customers, get_single_customer, create_animal, create_location, create_employee, create_customer, delete_animal, delete_location, delete_employee, delete_customer, update_animal, update_location, update_employee, update_customer, get_customer_by_email, get_animals_by_location, get_employees_by_location, get_animals_by_treatment
+from views import get_all_animals, get_single_animal, get_all_locations, get_single_location, get_all_employees, get_single_employee, get_all_customers, get_single_customer, create_animal, create_location, create_employee, create_customer, delete_animal, delete_location, delete_employee, delete_customer, update_animal, update_location, update_employee, update_customer, get_customer_by_email, get_animals_by_location, get_employees_by_location, get_animals_by_treatment, search_animal
 import json
 
 # Here's a class. It inherits from another class.
@@ -111,6 +111,9 @@ class HandleRequests(BaseHTTPRequestHandler):
             
             if query.get('status') and resource == 'animals':
                 response = get_animals_by_treatment(query['status'][0])
+                
+            if query.get('search') and resource == 'animals':
+                response = search_animal(query['search'][0])
 
         self.wfile.write(json.dumps(response).encode())
 

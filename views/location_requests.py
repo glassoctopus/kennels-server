@@ -16,12 +16,12 @@ def get_all_locations():
 
         # Write the SQL query to get the information you want
         db_cursor.execute("""
-        SELECT
-            l.id,
-            l.name,
-            l.address
-        FROM location l
-        """)
+            SELECT
+                l.id,
+                l.name,
+                l.address
+            FROM location l
+            """)
         
         dataset_locations = db_cursor.fetchall()     
 
@@ -30,14 +30,14 @@ def get_all_locations():
             location = Location(row['id'], row['name'], row['address'])
             
             db_cursor.execute("""
-            SELECT
-                e.id,
-                e.name,
-                e.address,
-                e.location_id
-            FROM employee e
-            WHERE e.location_id = ?
-            """, ( location.id, ))
+                SELECT
+                    e.id,
+                    e.name,
+                    e.address,
+                    e.location_id
+                FROM employee e
+                WHERE e.location_id = ?
+                """, ( location.id, ))
             
             dataset_employees = db_cursor.fetchall()
             
@@ -46,16 +46,16 @@ def get_all_locations():
                 location.employees.append(employee.__dict__)
                 
             db_cursor.execute("""
-            SELECT
-                a.id,
-                a.name,
-                a.breed,
-                a.status,
-                a.location_id,
-                a.customer_id
-            FROM animal a
-            WHERE a.location_id = ?
-            """, ( location.id, ))
+                SELECT
+                    a.id,
+                    a.name,
+                    a.breed,
+                    a.status,
+                    a.location_id,
+                    a.customer_id
+                FROM animal a
+                WHERE a.location_id = ?
+                """, ( location.id, ))
                 
             dataset_animals = db_cursor.fetchall()
                 
@@ -75,13 +75,13 @@ def get_single_location(id):
         # Use a ? parameter to inject a variable's value
         # into the SQL statement.
         db_cursor.execute("""
-        SELECT
-            l.id,
-            l.name,
-            l.address
-        FROM location l
-        WHERE l.id = ?
-        """, ( id, ))
+            SELECT
+                l.id,
+                l.name,
+                l.address
+            FROM location l
+            WHERE l.id = ?
+            """, ( id, ))
 
         # Load the single result into memory
         data = db_cursor.fetchone()
@@ -96,11 +96,11 @@ def create_location(new_location):
         db_cursor = conn.cursor()
 
         db_cursor.execute("""
-        INSERT INTO location
-            ( name, address )
-        VALUES
-            ( ?, ? );
-        """, (new_location['name'], new_location['address'], ))
+            INSERT INTO location
+                ( name, address )
+            VALUES
+                ( ?, ? );
+            """, (new_location['name'], new_location['address'], ))
 
         id = db_cursor.lastrowid
 
@@ -113,21 +113,21 @@ def delete_location(id):
         db_cursor = conn.cursor()
 
         db_cursor.execute("""
-        DELETE FROM location
-        WHERE id = ?
-        """, (id, ))
+            DELETE FROM location
+            WHERE id = ?
+            """, (id, ))
 
 def update_location(id, new_location):
     with sqlite3.connect("./kennel.sqlite3") as conn:
         db_cursor = conn.cursor()
 
         db_cursor.execute("""
-        UPDATE Location
-            SET
-                name = ?,
-                address = ?
-        WHERE id = ?
-        """, (new_location['name'], new_location['address'], id, ))
+            UPDATE Location
+                SET
+                    name = ?,
+                    address = ?
+            WHERE id = ?
+            """, (new_location['name'], new_location['address'], id, ))
 
         rows_affected = db_cursor.rowcount
 

@@ -12,14 +12,14 @@ def get_all_customers():
 
         # Write the SQL query to get the information you want
         db_cursor.execute("""
-        SELECT
-            c.id,
-            c.name,
-            c.address,
-            c.email,
-            c.password
-        FROM customer c
-        """)
+            SELECT
+                c.id,
+                c.name,
+                c.address,
+                c.email,
+                c.password
+            FROM customer c
+            """)
 
         # Initialize an empty list to hold all customer representations
         customers = []
@@ -48,15 +48,15 @@ def get_single_customer(id):
         # Use a ? parameter to inject a variable's value
         # into the SQL statement.
         db_cursor.execute("""
-        SELECT
-            c.id,
-            c.name,
-            c.address,
-            c.email,
-            c.password
-        FROM customer c
-        WHERE c.id = ?
-        """, ( id, ))
+            SELECT
+                c.id,
+                c.name,
+                c.address,
+                c.email,
+                c.password
+            FROM customer c
+            WHERE c.id = ?
+            """, ( id, ))
 
         # Load the single result into memory
         data = db_cursor.fetchone()
@@ -74,15 +74,15 @@ def get_customer_by_email(email):
 
         # Write the SQL query to get the information you want
         db_cursor.execute("""
-        select
-            c.id,
-            c.name,
-            c.address,
-            c.email,
-            c.password
-        from Customer c
-        WHERE c.email = ?
-        """, ( email, ))
+            select
+                c.id,
+                c.name,
+                c.address,
+                c.email,
+                c.password
+            from Customer c
+            WHERE c.email = ?
+            """, ( email, ))
 
         customers = []
         dataset = db_cursor.fetchall()
@@ -98,12 +98,12 @@ def create_customer(new_customer):
         db_cursor = conn.cursor()
 
         db_cursor.execute("""
-        INSERT INTO customer
-            ( name, address, email, password )
-        VALUES
-            ( ?, ?, ?, ?);
-        """, (new_customer['name'], new_customer['address'],
-              new_customer['email'], new_customer['password'], ))
+            INSERT INTO customer
+                ( name, address, email, password )
+            VALUES
+                ( ?, ?, ?, ?);
+            """, (new_customer['name'], new_customer['address'],
+                new_customer['email'], new_customer['password'], ))
 
         id = db_cursor.lastrowid
 
@@ -116,24 +116,24 @@ def delete_customer(id):
         db_cursor = conn.cursor()
 
         db_cursor.execute("""
-        DELETE FROM customer
-        WHERE id = ?
-        """, (id, ))
+            DELETE FROM customer
+            WHERE id = ?
+            """, (id, ))
 
 def update_customer(id, new_customer):
     with sqlite3.connect("./kennel.sqlite3") as conn:
         db_cursor = conn.cursor()
 
         db_cursor.execute("""
-        UPDATE Customer
-            SET
-                name = ?,
-                address = ?,
-                email = ?,
-                password = ?
-        WHERE id = ?
-        """, (new_customer['name'], new_customer['address'],
-              new_customer['email'], new_customer['password'], id, ))
+            UPDATE Customer
+                SET
+                    name = ?,
+                    address = ?,
+                    email = ?,
+                    password = ?
+            WHERE id = ?
+            """, (new_customer['name'], new_customer['address'],
+                new_customer['email'], new_customer['password'], id, ))
 
         # Were any rows affected?
         # Did the client send an `id` that exists?
